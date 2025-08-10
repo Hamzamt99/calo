@@ -4,10 +4,10 @@ const { faker } = require('@faker-js/faker');
 
 const POSITIONS = ['GK', 'DF', 'MF', 'FW'];
 const POSITION_DISTRIBUTION = {
-  GK: 10,
-  DF: 30,
-  MF: 30,
-  FW: 30,
+  GK: 3000,
+  DF: 3000,
+  MF: 3000,
+  FW: 3000,
 };
 
 const generatePlayers = () => {

@@ -22,6 +22,11 @@ export class AuthService {
         replacements: { email: dto.email },
       })) as UserRow[];
 
+      if (users && isRegisterDto(dto)) {
+        // register
+        throw new Error("Email already in use");
+      }
+
       if (users) {
         // login
         const user = users;
@@ -31,7 +36,7 @@ export class AuthService {
         return { token };
       }
 
-      if (!isRegisterDto(dto)) throw new Error("Registration requires name, username, and lastName.");
+      if (!isRegisterDto(dto)) throw new Error("No user found with this email please register");
 
       const usernames = (await this.db.query(FIND_USER_BY_USERNAME, {
         type: QueryTypes.SELECT,
@@ -54,7 +59,7 @@ export class AuthService {
 
       if (!userId) throw new Error("Could not determine inserted user id");
 
-      await teamQueue.add("create-team", { userId });
+      await teamQueue.add('create-team', { userId });
 
       const token = jwt.sign({ id: userId }, process.env.JWT_SECRET!, { expiresIn: "1d" });
       return { token };

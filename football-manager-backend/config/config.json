@@ -2,7 +2,7 @@
   "development": {
     "username": "myuser",
     "password": "mypassword",
-    "database": "football_manager",
+    "database": "football_manager2",
     "host": "localhost",
     "dialect": "mysql"
   },

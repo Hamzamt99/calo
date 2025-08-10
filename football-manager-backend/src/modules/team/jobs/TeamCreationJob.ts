@@ -1,16 +1,19 @@
 // src/modules/team/jobs/team-creation.job.ts
 import { TeamService } from '../services';
+import { getIo } from '../../../core/socket';
 
 interface Payload {
   userId: number;
   teamName?: string;
 }
 
+
 export class TeamCreationJob {
   /**
    * Called by BullMQ worker
    */
   static async handle(payload: Payload): Promise<void> {
+    const io = getIo();
     const { userId } = payload;
 
     console.info(`⏳  Drafting team for user ${userId}…`);
@@ -18,6 +21,7 @@ export class TeamCreationJob {
     try {
       await TeamService.createTeamAndAssignPlayers({ userId });
       console.info(`✅  Team created for user ${userId}`);
+      io.to(`user-${userId}`).emit('team-ready', { message: 'done' });
     } catch (err) {
       console.error(`❌  Failed to create team for user ${userId}: ${(err as Error).message}`);
       /**
