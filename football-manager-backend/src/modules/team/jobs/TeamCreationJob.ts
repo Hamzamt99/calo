@@ -1,6 +1,6 @@
 // src/modules/team/jobs/team-creation.job.ts
 import { TeamService } from '../services';
-import { getIo } from '../../../core/socket';
+import {SocketIO} from '../../../core/socket';
 
 interface Payload {
   userId: number;
@@ -13,7 +13,7 @@ export class TeamCreationJob {
    * Called by BullMQ worker
    */
   static async handle(payload: Payload): Promise<void> {
-    const io = getIo();
+    const io = SocketIO.get()
     const { userId } = payload;
 
     console.info(`⏳  Drafting team for user ${userId}…`);

@@ -31,9 +31,14 @@ export class TeamService {
     if (!team) throw new Error("Team not found");
 
     const players = await database.query<PlayerRow>(
-      `SELECT p.* FROM players p
-     JOIN team_players tp ON tp.player_id = p.id
-     WHERE tp.team_id = :team_id`,
+       `SELECT p.*
+        FROM players p
+        JOIN team_players tp ON tp.player_id = p.id
+        WHERE tp.team_id = :team_id
+        AND NOT EXISTS (
+          SELECT 1 FROM transfer_listings tl
+          WHERE tl.player_id = p.id
+      )`,
       {
         type: QueryTypes.SELECT,
         replacements: { team_id: team.id },

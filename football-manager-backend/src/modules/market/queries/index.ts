@@ -12,9 +12,9 @@ export const GET_LISTINGS_QUERY = `
   JOIN players p ON p.id = tl.player_id
   JOIN teams t ON t.id = tl.seller_team_id
   WHERE
-    (:teamName IS NULL OR t.name LIKE '%' || :teamName || '%') AND
-    (:playerName IS NULL OR p.name LIKE '%' || :playerName || '%') AND
-    (:maxPrice IS NULL OR tl.asking_price <= :maxPrice)
+    (:teamName IS NULL  OR LOWER(t.name) LIKE :teamName)
+    AND (:playerName IS NULL OR LOWER(p.name) LIKE :playerName)
+    AND (:maxPrice IS NULL OR tl.asking_price <= :maxPrice)
   ORDER BY tl.posted_at DESC
 `;
 

@@ -1,37 +1,32 @@
-// src/socket.ts
-import { Server as HttpServer } from 'http';
-import { Server as SocketIOServer } from 'socket.io';
+// src/core/socket.ts
+import type { Server as HttpServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
 
-let io: SocketIOServer | undefined;
+export class SocketIO {
+  private static io: SocketIOServer | null = null;
 
-/**
- * Initializes the Socket.IO server and stores the instance.
- * Call this once with your HTTP server before using getIo().
- */
-export function initSocket(server: HttpServer) {
-  io = new SocketIOServer(server, {
-    cors: { origin: process.env.FRONTEND_URL || '*' }
-  });
+  static init(server: HttpServer): SocketIOServer {
+    if (this.io) return this.io;
 
-  // Example: join users to rooms by ID
-  io.on('connection', (socket) => {
-    socket.on('join', (userId: number) => {
-      socket.join(`user-${userId}`);
+    this.io = new SocketIOServer(server, {
+      cors: { origin: process.env.FRONTEND_URL ?? "*" },
     });
-  });
 
-  return io;
-}
+    this.io.on("connection", (socket) => {
+      socket.on("join", (userId: number) => {
+        socket.join(`user-${userId}`); 
+      });
+    });
 
-/**
- * Returns the initialized Socket.IO server instance.
- * Throws an error if initSocket() hasn’t been called yet.
- */
-export function getIo(): SocketIOServer {
-  if (!io) {
-    throw new Error('Socket.io has not been initialized. Call initSocket(server) first.');
+    return this.io;
   }
-  console.log('Socket.io instance retrieved');
-  
-  return io;
+
+  static get(): SocketIOServer {
+    
+    if (!this.io) {
+      console.log('if this error appears that mean the socket didnt initialized yet no worries logout from your broken user and try again :)');
+      throw new Error("Socket.IO not initialized. Call SocketIO.init(server) first.");
+    }
+    return this.io;
+  }
 }

@@ -14,4 +14,4 @@ new Worker('team-creation', async job => {
   if (job.name === 'create-team') {
    await TeamCreationJob.handle({ userId: job.data.userId });
   }
-}, { connection, lockDuration: 60000, });
+}, { connection });
