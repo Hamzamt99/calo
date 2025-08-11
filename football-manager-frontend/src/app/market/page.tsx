@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../lib/auth-context";
 import { getListings, buyPlayer } from "../../lib/api";
+import { Toaster, toast } from "react-hot-toast"; 
 
 function cn(...c: (string | false | null | undefined)[]) { return c.filter(Boolean).join(" "); }
 
@@ -69,11 +70,19 @@ export default function MarketPage() {
     if (!token) return;
     try {
       setBuyingId(id);
-      await buyPlayer(token, id);
-      // Optimistic removal
-      setListings((ls) => ls.filter((l) => l.id !== id));
+      const l = listings.find(li => li.id === id);
+      await toast.promise(
+        buyPlayer(token, id),
+        {
+          loading: "Processing purchase…",
+          success: `Bought ${l?.playerName ?? "player"} for ${currency(Number(l?.askingPrice ?? 0))} ✅`,
+          error: (e) => e?.response?.data?.message || e?.message || "Purchase failed.",
+        }
+      );
+      setListings((ls) => ls.filter((x) => x.id !== id));
     } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || "Purchase failed.");
+      const msg = err?.response?.data?.message || err?.message || "Purchase failed.";
+      setError(msg);
     } finally {
       setBuyingId(null);
       setPendingBuy(null);
@@ -82,6 +91,7 @@ export default function MarketPage() {
 
   return (
     <div className="mx-auto max-w-7xl p-4 sm:p-6">
+      <Toaster position="top-right" />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-semibold">Transfer Market</h1>
@@ -116,10 +126,6 @@ export default function MarketPage() {
           </div>
         </div>
       </div>
-
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-700">{error}</div>
-      )}
 
       {/* Desktop table */}
       <div className="hidden md:block overflow-hidden rounded-2xl border border-gray-100 shadow-sm">

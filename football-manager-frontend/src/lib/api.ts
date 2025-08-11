@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
 export interface LoginDto {
   email: string;
@@ -11,6 +11,12 @@ export interface RegisterDto extends LoginDto {
   username: string;
   lastName: string;
 }
+
+type ListingFilters = {
+  teamName?: string;
+  playerName?: string;
+  maxPrice?: string | number;
+};
 
 export async function registerOrLogin(dto: LoginDto | RegisterDto) {
   const res = await axios.post(`${API_URL}/auth`, dto);
@@ -24,15 +30,27 @@ export async function getTeam(token: string) {
   return res.data.data; // { id, name, budget, players: [] }
 }
 
-export async function getListings(token: string, filters: any) {
-  const params = new URLSearchParams();
-  if (filters.teamName) params.append('teamName', filters.teamName);
-  if (filters.playerName) params.append('playerName', filters.playerName);
-  if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
-  const res = await axios.get(`${API_URL}/market?${params}`, {
+export async function getListings(token: string, filters: ListingFilters = {}) {
+  const params: Record<string, string> = {};
+
+  if (filters.teamName && filters.teamName.trim()) {
+    params.teamName = filters.teamName.trim();
+  }
+  if (filters.playerName && filters.playerName.trim()) {
+    params.playerName = filters.playerName.trim();
+  }
+  const maxNum = Number(filters.maxPrice);
+  if (!Number.isNaN(maxNum) && maxNum > 0) {
+    params.maxPrice = String(maxNum);
+  }
+
+  const res = await axios.get(`${API_URL}/market`, {
     headers: { Authorization: `Bearer ${token}` },
+    params, // ← let axios build & encode the query string
   });
-  return res.data.data;
+
+  // Adjust depending on your API shape
+  return res.data?.data ?? res.data;
 }
 
 export async function listPlayer(token: string, playerId: number, price: number) {

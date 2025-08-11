@@ -104,7 +104,7 @@ export default function LoginPage() {
       if (!token) throw new Error("Unexpected response from server.");
       setToken(token);
       Cookies.set("fm_token", token, { expires: 7 });
-      router.push("/team");
+      router.push("/");
     } catch (err: any) {
       const serverMsg = err?.response?.data?.message || err?.message || "Something went wrong.";
       setServerError(serverMsg);
